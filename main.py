@@ -29,28 +29,49 @@ pas_data_MPS.dropna(inplace=True)
 # print(pas_data_borough)
 # print(pas_data_MPS)
 
-# plot things per borough over time to see any patterns...
-for boroughs in pas_data_borough["Borough"].unique():
-    for measures in pas_data_borough["Measure"].unique():
-        cust_df_mask = pas_data_borough["Borough"] == boroughs
-        cust_df = pas_data_borough[cust_df_mask]
 
-        cust_df_meas_mask = cust_df["Measure"] == measures
-        cust_df = cust_df[cust_df_meas_mask]
+for measures in pas_data_MPS["Measure"].unique():
+    meas_df_mask = pas_data_MPS["Measure"] == measures
+    meas_df = pas_data_MPS[meas_df_mask]
 
-        x_cat = "Date"
-        y_cat = "Proportion"
+    x_cat = "Date"
+    y_cat = "Proportion"
+
+    checkplot = plt.plot(meas_df[x_cat], meas_df[y_cat], label=measures)
+    plt.xticks(rotation=90)
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    plt.legend(loc='upper left', bbox_to_anchor=(1.1, 1))
+    plt.gcf().set_size_inches(8, 5)
+
+plt.title(f"MPS Survey General: {y_cat}")
+plt.show()
+
+## Option to plot per borough
+plot_boroughs = True
 
 
-        checkplot = plt.plot(cust_df[x_cat], cust_df[y_cat], label=measures)
-        plt.xticks(rotation=90)
-        plt.tight_layout()
-        plt.legend(loc='upper left', bbox_to_anchor=(1.1, 1))
-        plt.gcf().set_size_inches(8, 5)
+if plot_boroughs == True:
+    # plot things per borough over time to see any patterns...
+    for boroughs in pas_data_borough["Borough"].unique():
+        for measures in pas_data_borough["Measure"].unique():
+            cust_df_mask = pas_data_borough["Borough"] == boroughs
+            cust_df = pas_data_borough[cust_df_mask]
 
-    plt.title(f"{boroughs} {y_cat} Data")
-    plt.show()
+            cust_df_meas_mask = cust_df["Measure"] == measures
+            cust_df = cust_df[cust_df_meas_mask]
 
+            x_cat = "Date"
+            y_cat = "Proportion"
+
+
+            checkplot = plt.plot(cust_df[x_cat], cust_df[y_cat], label=measures)
+            plt.xticks(rotation=90)
+            plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+            plt.legend(loc='upper left', bbox_to_anchor=(1.1, 1))
+            plt.gcf().set_size_inches(8, 5)
+
+        plt.title(f"{boroughs} {y_cat} Data")
+        plt.show()
 
 
 # Adjusted code from Visualization, as a dash may be a nice way to visualize the data later....
