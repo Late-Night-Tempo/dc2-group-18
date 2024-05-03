@@ -7,22 +7,27 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import datetime
+#Use pyreadstat to open spss
+import pyreadstat
 
 # To read an excel file, install the optional dependency openpyxl. I personally converted to CSV using excel.
-pas_data_borough = pd.read_csv("data/PAS_T&Cdashboard_to Q3 23-24 BOROUGH.csv")
-pas_data_MPS = pd.read_csv("data/PAS_T&Cdashboard_to Q3 23-24 MPS.csv")
+pas_data_borough = pd.read_csv("data/pas_data_borough.csv")
+pas_data_MPS = pd.read_csv("data/pas_data_MPS.csv")
+custom_dataset = pd.read_spss("data/spss25/csew_apr19mar20_10-15_nvf.sav")
+
+print(custom_dataset.info())
+print(custom_dataset.head())
+print(custom_dataset.columns)
+
 
 # Set datatypes BOROUGH
-pas_data_borough = pas_data_borough.drop(columns=["Unnamed: 6", "Unnamed: 7", "Unnamed: 8", "Unnamed: 9"])
 pd.to_datetime(pas_data_borough['Date'])
 pas_data_borough = pas_data_borough.astype({'Survey': 'str', 'Borough': 'str', 'Measure': 'str'})
-pas_data_borough.dropna(inplace=True)
 
 
 # Set datatypes MPS
 pd.to_datetime(pas_data_MPS['Date'])
 pas_data_MPS = pas_data_MPS.astype({'Survey': 'str', 'Borough': 'str', 'Measure': 'str'})
-pas_data_MPS.dropna(inplace=True)
 
 
 # print check
@@ -47,7 +52,7 @@ plt.title(f"MPS Survey General: {y_cat}")
 plt.show()
 
 ## Option to plot per borough
-plot_boroughs = True
+plot_boroughs = False
 
 
 if plot_boroughs == True:

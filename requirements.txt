@@ -1,1 +1,7 @@
 # Add required packages as necessary throughout the project!! Do NOT simply put in your entire environment, only the bare necessities to run the code.
+pandas~=2.0.1
+openpyxl~=3.1.2
+pyreadstat~=1.2.7
+numpy~=1.24.1
+matplotlib~=3.6.2
+seaborn~=0.12.2
