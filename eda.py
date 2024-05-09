@@ -1,7 +1,12 @@
+import numpy as np
 import pandas as pd
 import openpyxl
 import pyreadstat
 from os import listdir
+import geopandas as gpd
+from shapely.geometry import Point
+from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 ## Doing preliminary tests on 1 crime dataset...
 #
@@ -71,8 +76,8 @@ search_df = pd.read_csv("data/RawSearchData.csv")
 # print(len(search_df))
 
 #Print columns per df
-print(street_df.columns)
-print(search_df.columns)
+# print(street_df.columns)
+# print(search_df.columns)
 
 # Drop unintentional index column
 street_df.drop(columns=["Unnamed: 0"], inplace=True)
@@ -99,13 +104,67 @@ for items in street_df.columns:
     if len(street_df[items].unique()) == 1:
         street_df.drop(columns=[items], inplace=True)
     else:
-        print(street_df[items].unique())
+        pass
+        #print(street_df[items].unique())
 
 for items in search_df.columns:
     if len(search_df[items].unique()) == 1:
         search_df.drop(columns=[items], inplace=True)
     else:
-        print(search_df[items].unique())
+        pass
+        #print(search_df[items].unique())
+
+print("BEGIN MAPPING")
+
+## Begin finding borough location
+
+# Collect map
+map_path = "data/London-wards-2018/London-wards-2018_ESRI/London_Ward_CityMerged.shp"
+gdf = gpd.read_file(map_path)
+
+# Convert to coordinates
+gdf.to_crs(epsg=4326, inplace=True)
+
+# Get all points as a list!!!
+street_points = []
+search_points = []
+
+print("COLLECT LONG LAT - STREET DATA")
+for point_index, point_rows in tqdm(street_df.iterrows(), total=len(street_df)):
+    point = Point(point_rows["Longitude"], point_rows["Latitude"])
+    street_points.append(point)
+
+print("COLLECT LONG LAT - SEARCH DATA")
+for point_index, point_rows in tqdm(search_df.iterrows(), total=len(search_df)):
+    point = Point(point_rows["Longitude"], point_rows["Latitude"])
+    search_points.append(point)
+
+street_points = gpd.GeoDataFrame(geometry=street_points, crs=gdf.crs)
+search_points = gpd.GeoDataFrame(geometry=search_points, crs=gdf.crs)
+
+
+
+# Do a join to get borough names
+
+# Joins the points and districts together, then creates dataframe from it
+street_districts = pd.DataFrame(gpd.sjoin(street_points, gdf, how="left", op="within"))
+search_districts = pd.DataFrame(gpd.sjoin(search_points, gdf, how="left", op="within"))
+
+# Add only borough column to the street df
+street_df["Borough"] = street_districts["DISTRICT"]
+search_df["Borough"] = search_districts["DISTRICT"]
+
+print(street_df.info())
+print(search_df.info())
+
+street_df.dropna(subset=["Borough"], inplace=True)
+search_df.dropna(subset=["Borough"], inplace=True)
+
+street_df["Borough"] = street_df["Borough"].str.lower()
+search_df["Borough"] = search_df["Borough"].str.lower()
+
+print(street_df["Borough"].unique())
+print(search_df["Borough"].unique())
 
 
 street_df.to_csv("CleanStreetData.csv", index=False)
