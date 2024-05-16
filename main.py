@@ -13,11 +13,6 @@ import pyreadstat
 # To read an excel file, install the optional dependency openpyxl. I personally converted to CSV using excel.
 pas_data_borough = pd.read_csv("data/pas_data_borough.csv")
 pas_data_MPS = pd.read_csv("data/pas_data_MPS.csv")
-custom_dataset = pd.read_spss("data/spss25/csew_apr19mar20_10-15_nvf.sav")
-
-print(custom_dataset.info())
-print(custom_dataset.head())
-print(custom_dataset.columns)
 
 
 # Set datatypes BOROUGH
@@ -77,24 +72,3 @@ if plot_boroughs == True:
 
         plt.title(f"{boroughs} {y_cat} Data")
         plt.show()
-
-
-# Adjusted code from Visualization, as a dash may be a nice way to visualize the data later....
-# import plotly.express as px
-# from dash.dependencies import Input, Output
-# import dash
-# from dash import Dash, dcc, html
-# import dash_bootstrap_components as dbc
-#
-# app = Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.ZEPHYR])
-#
-# # Customize Layout
-# app.layout = dbc.Container([
-#     # header
-#     dcc.Markdown("Basic EDA", style={'fontSize': 45, 'textAlign': 'center'}),
-#
-# ], fluid=True)
-#
-# # Run App
-# if __name__ == '__main__':
-#     app.run_server(port=8051, debug=True, use_reloader=False)
