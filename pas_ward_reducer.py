@@ -44,6 +44,18 @@ for col in pas_data_df.columns:
         else:
             print(f"Multiple or no matches found for column '{col}' in 'Question Label'.")
 
+
+# List to store columns to drop
+col_drop = []
+
+# Iterate over the columns starting from index 5 (i.e., the 6th column)
+for i, col in enumerate(pas_data_df.columns):
+    if i > 15 and ';' not in col:
+        col_drop.append(col)
+
+# Drop the collected columns
+pas_data_df.drop(columns=col_drop, inplace=True)
+
 print(pas_data_df)
-pas_data_df.to_csv("CleanedPasWardData.csv")
+pas_data_df.to_csv("CleanedDroppedPasWardData.csv")
 
