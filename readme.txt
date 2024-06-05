@@ -10,6 +10,9 @@ income with pp household and trust income correlation.ipynb
 - i plot the 2 variables (trust and work-based income) on a scatter plot
 - you can observe how the 2 variables correlate for each year
 
+--------------------
+
+The folder ''cleandata'' is used in the notebooks - you can get that folder (\datasets) from google drive.
 
 --------------------
 
