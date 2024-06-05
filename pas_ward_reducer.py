@@ -57,5 +57,5 @@ for i, col in enumerate(pas_data_df.columns):
 pas_data_df.drop(columns=col_drop, inplace=True)
 
 print(pas_data_df)
-pas_data_df.to_csv("CleanedDroppedPasWardData.csv")
+pas_data_df.to_csv("CleanedDroppedPasWardData2.csv", index=False)
 
