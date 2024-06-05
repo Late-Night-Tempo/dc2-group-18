@@ -69,10 +69,11 @@ def year_min(input_string):
 
 
 # Collect dfs
-pas_ward = pd.read_csv("CleanedDroppedPasWardData.csv")
+pas_ward = pd.read_csv("CleanedDroppedPasWardData2.csv")
 question_dictionary = pd.read_excel("TrueFalseSetter.xlsx")
 below_llw = pd.read_csv("CleanedBelowLLWBorough.csv")
 inactivity_df = pd.read_csv("CleanedInactivityData.csv")
+trust_df = pd.read_csv("data/pas_data_borough.csv")
 
 #print(below_llw)
 # print(inactivity_df.columns)
@@ -195,6 +196,10 @@ for columns in inactivity_df_shaper.columns:
 
 inactivity_df_shaper.drop(columns=["Unnamed: 0", "Code"], inplace=True)
 
+trust_merge = trust_df.drop(columns=["Unnamed: 0", "Survey", "MPS"])
+# Add section for adding proportion?
+
+
 
 
 # Now all the column names are just the year, yippee
@@ -226,41 +231,81 @@ pas_merged_incom = pd.merge(pas_ward, df_B_long, on=['Area Name', 'YEAR'])
 pas_logistic = pd.merge(pas_merged_incom, df_inac_long, on=["Area Name", "YEAR"])
 
 print("Finished pas merged:")
-
-print(pas_logistic)
-pas_logistic.to_csv("LregPasData.csv", index=False)
-
-# Sample DataFrame
-data = {
-    'Category': ['A', 'B', 'A', 'C', 'B', 'C', 'A', 'B', 'C', 'A'],
-    'Value': [10, 15, 14, 10, 21, 20, 13, 19, 22, 15],
-    'Target': [100, 150, 110, 130, 170, 180, 115, 165, 190, 120]
-}
-df = pd.DataFrame(data)
+#
+# print(pas_logistic)
+#pas_logistic.to_csv("LregPasData.csv", index=False)
 
 # Step 2: Identify unique values in the 'Category' column
-unique_values = df['Category'].unique()
+for categories in question_reduced_list:
+    categories_store = []
+    categories_store.append(categories)
+    categories_store.append("LLW")
+    # print(categories_store)
 
-# Step 3: Create dummy variables (one-hot encoding)
-df_dummies = pd.get_dummies(df, columns=['Category'], drop_first=True)
+    pas_logistic_filtered = pas_logistic[categories_store]
 
-# Step 4: Prepare the data for regression
-X = df_dummies.drop(columns='Target')  # Feature matrix (independent variables)
-y = df_dummies['Target']               # Target variable (dependent variable)
+    # Get unique vals
+    unique_values = pas_logistic_filtered[categories].unique()
 
-# Step 5: Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # Dummy vars go brr
+    df_dummies = pd.get_dummies(pas_logistic_filtered, columns=[categories], drop_first=True)
 
-# Step 6: Create and train the linear regression model
-model = LinearRegression()
-model.fit(X_train, y_train)
+    # Step 4: Prepare the data for regression
+    X = df_dummies.drop(columns='LLW')  # Feature matrix (independent variables)
+    y = df_dummies['LLW']  # Target variable (dependent variable)
 
-# Step 7: Extract coefficients and corresponding feature names
-coefficients = pd.Series(model.coef_, index=X.columns)
+    # Step 5: Train-test split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Step 8: Identify the category with the largest absolute value coefficient
-largest_abs_coefficient = coefficients.abs().idxmax()
-largest_abs_value = coefficients[largest_abs_coefficient]
+    # Step 6: Create and train the linear regression model
+    model = LinearRegression()
+    model.fit(X_train, y_train)
 
-print(f"The category with the largest absolute value coefficient is: {largest_abs_coefficient}")
-print(f"The coefficient value is: {largest_abs_value}")
+    # Step 7: Extract coefficients and corresponding feature names
+    coefficients = pd.Series(model.coef_, index=X.columns)
+
+    # Step 8: Identify the category with the largest absolute value coefficient
+    largest_abs_coefficient = coefficients.abs().idxmax()
+    largest_abs_value = coefficients[largest_abs_coefficient]
+
+    print(f"The category with the largest absolute value coefficient is: {largest_abs_coefficient}")
+    print(f"The coefficient value is: {largest_abs_value}")
+
+
+#
+#
+#
+# # Sample DataFrame
+# data = {
+#     'Category': ['A', 'B', 'A', 'C', 'B', 'C', 'A', 'B', 'C', 'A'],
+#     'Value': [10, 15, 14, 10, 21, 20, 13, 19, 22, 15],
+#     'Target': [100, 150, 110, 130, 170, 180, 115, 165, 190, 120]
+# }
+# df = pd.DataFrame(data)
+#
+# # Step 2: Identify unique values in the 'Category' column
+# unique_values = df['Category'].unique()
+#
+# # Step 3: Create dummy variables (one-hot encoding)
+# df_dummies = pd.get_dummies(df, columns=['Category'], drop_first=True)
+#
+# # Step 4: Prepare the data for regression
+# X = df_dummies.drop(columns='Target')  # Feature matrix (independent variables)
+# y = df_dummies['Target']               # Target variable (dependent variable)
+#
+# # Step 5: Train-test split
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+#
+# # Step 6: Create and train the linear regression model
+# model = LinearRegression()
+# model.fit(X_train, y_train)
+#
+# # Step 7: Extract coefficients and corresponding feature names
+# coefficients = pd.Series(model.coef_, index=X.columns)
+#
+# # Step 8: Identify the category with the largest absolute value coefficient
+# largest_abs_coefficient = coefficients.abs().idxmax()
+# largest_abs_value = coefficients[largest_abs_coefficient]
+#
+# print(f"The category with the largest absolute value coefficient is: {largest_abs_coefficient}")
+# print(f"The coefficient value is: {largest_abs_value}")
