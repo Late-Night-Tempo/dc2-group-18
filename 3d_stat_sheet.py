@@ -82,9 +82,6 @@ trust_df = pd.read_csv("data/pas_data_borough.csv")
 question_groups = []
 
 for column in pas_ward.columns:
-    unique_values = pas_ward[column].unique()
-    unique_count = pas_ward[column].nunique()
-    value_frequencies = pas_ward[column].value_counts()
 
     # Get all questions from dictionary
     if ";" in column:
@@ -99,7 +96,7 @@ for column in pas_ward.columns:
 
 # Process list to create grouped questions
 grouped_matches = group_consecutive_matches(question_groups)
-#print(grouped_matches)
+
 
 response_numerical = {
     np.nan: 0,
@@ -196,15 +193,16 @@ for columns in inactivity_df_shaper.columns:
 
 inactivity_df_shaper.drop(columns=["Unnamed: 0", "Code"], inplace=True)
 
+# Add proportion. proportion shall be our lovely y variable. the questions will indicate the predicting vars
+# Although we will need to separate the measures... make multiple models, one per each measure!
 trust_merge = trust_df.drop(columns=["Unnamed: 0", "Survey", "MPS"])
-# Add section for adding proportion?
-
-
+trust_merge.rename(columns={"Borough": "Area Name", "Date":"YEAR"}, inplace=True)
+trust_merge["YEAR"] = pd.to_datetime(trust_merge["YEAR"])
+trust_merge["YEAR"] = trust_merge["YEAR"].dt.year
 
 
 # Now all the column names are just the year, yippee
 # Now we match borough and year together, and create LLW and Percent inactivity column
-
 
  # Collect month + year
 pas_ward["MONTH_YEAR"] = pas_ward["MONTH"].str.extract(r'\(([^)]+)\)')
@@ -223,6 +221,7 @@ df_inac_long['YEAR'] = df_inac_long['YEAR'].astype(int)
 
 pas_ward.rename(columns={"C2;3": "Area Name"}, inplace=True)
 
+
 # Merge DataFrame Pas and LLW
 pas_merged_incom = pd.merge(pas_ward, df_B_long, on=['Area Name', 'YEAR'])
 
@@ -230,29 +229,55 @@ pas_merged_incom = pd.merge(pas_ward, df_B_long, on=['Area Name', 'YEAR'])
 # Merge pas and inac
 pas_logistic = pd.merge(pas_merged_incom, df_inac_long, on=["Area Name", "YEAR"])
 
-print("Finished pas merged:")
-#
-# print(pas_logistic)
+# Merge pas and trust
+
+# We will merge using proportion, not MPS
+# Drop duplicates
+trust_merge.drop_duplicates(inplace=True)
+
+# Use pivot_table to pivot the DataFrame
+df_pivot = trust_merge.pivot_table(index=['YEAR', 'Area Name'], columns='Measure', values='Proportion', aggfunc='first').reset_index()
+
+# Flatten the columns
+df_pivot.columns.name = None
+df_pivot.columns = df_pivot.columns.map(str)
+
+# Reset the index to flatten the DataFrame
+df_pivot.reset_index(inplace=True, drop=True)
+
+# Merge new pivot with proportion data into pas_logistic
+pas_logistic = pd.merge(pas_logistic, df_pivot, on=["Area Name", "YEAR"])
+
+print(pas_logistic)
 #pas_logistic.to_csv("LregPasData.csv", index=False)
+
 
 # Step 2: Identify unique values in the 'Category' column
 for categories in question_reduced_list:
     categories_store = []
     categories_store.append(categories)
-    categories_store.append("LLW")
+
+    target_category = "Trust MPS"
+
+    categories_store.append(target_category)
     # print(categories_store)
 
     pas_logistic_filtered = pas_logistic[categories_store]
 
     # Get unique vals
     unique_values = pas_logistic_filtered[categories].unique()
+    #print(unique_values)
 
     # Dummy vars go brr
     df_dummies = pd.get_dummies(pas_logistic_filtered, columns=[categories], drop_first=True)
 
+    df_dummies.dropna(subset=[target_category], inplace=True)
+
+
     # Step 4: Prepare the data for regression
-    X = df_dummies.drop(columns='LLW')  # Feature matrix (independent variables)
-    y = df_dummies['LLW']  # Target variable (dependent variable)
+    X = df_dummies.drop(columns=target_category)  # Feature matrix (independent variables)
+    y = df_dummies[target_category]  # Target variable (dependent variable)
+
 
     # Step 5: Train-test split
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -268,44 +293,12 @@ for categories in question_reduced_list:
     largest_abs_coefficient = coefficients.abs().idxmax()
     largest_abs_value = coefficients[largest_abs_coefficient]
 
+    # Print details of the linear regression model
+    print(f"Category: {categories}")
+    print(f"Target Category: {target_category}")
     print(f"The category with the largest absolute value coefficient is: {largest_abs_coefficient}")
     print(f"The coefficient value is: {largest_abs_value}")
-
-
-#
-#
-#
-# # Sample DataFrame
-# data = {
-#     'Category': ['A', 'B', 'A', 'C', 'B', 'C', 'A', 'B', 'C', 'A'],
-#     'Value': [10, 15, 14, 10, 21, 20, 13, 19, 22, 15],
-#     'Target': [100, 150, 110, 130, 170, 180, 115, 165, 190, 120]
-# }
-# df = pd.DataFrame(data)
-#
-# # Step 2: Identify unique values in the 'Category' column
-# unique_values = df['Category'].unique()
-#
-# # Step 3: Create dummy variables (one-hot encoding)
-# df_dummies = pd.get_dummies(df, columns=['Category'], drop_first=True)
-#
-# # Step 4: Prepare the data for regression
-# X = df_dummies.drop(columns='Target')  # Feature matrix (independent variables)
-# y = df_dummies['Target']               # Target variable (dependent variable)
-#
-# # Step 5: Train-test split
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-#
-# # Step 6: Create and train the linear regression model
-# model = LinearRegression()
-# model.fit(X_train, y_train)
-#
-# # Step 7: Extract coefficients and corresponding feature names
-# coefficients = pd.Series(model.coef_, index=X.columns)
-#
-# # Step 8: Identify the category with the largest absolute value coefficient
-# largest_abs_coefficient = coefficients.abs().idxmax()
-# largest_abs_value = coefficients[largest_abs_coefficient]
-#
-# print(f"The category with the largest absolute value coefficient is: {largest_abs_coefficient}")
-# print(f"The coefficient value is: {largest_abs_value}")
+    print("Intercept:", model.intercept_)
+    print("Coefficients:", model.coef_)
+    print("R-squared:", model.score(X, y))
+    print()
