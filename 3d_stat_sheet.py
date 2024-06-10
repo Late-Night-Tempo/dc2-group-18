@@ -63,7 +63,7 @@ def year_norm(input_string):
 
 # Collect dfs
 pas_ward = pd.read_csv("CleanedDroppedPasWardData.csv")
-question_dictionary = pd.read_excel("TrueFalseSetter.xlsx")
+# question_dictionary = pd.read_excel("TrueFalseSetter.xlsx")
 below_llw = pd.read_csv("CleanedBelowLLWBorough.csv")
 trust_df = pd.read_csv("data/pas_data_borough.csv")
 
@@ -342,3 +342,103 @@ print("Intercept:", model2.intercept_)
 print("Coefficients:", model2.coef_)
 print("R-squared:", model2.score(X2, y2))
 print()
+
+
+
+# Find borough with the most outliers
+
+
+
+# Graph the lines
+
+
+############## MODEL 1 #########################
+y_pred = model.predict(X_test)
+
+# Combine the actual and predicted values into a DataFrame for visualization
+results_df = pd.DataFrame({
+    'Actual': y_test,
+    'Predicted': y_pred
+})
+
+# Add the test features to the results for further analysis
+results_df = pd.concat([results_df, X_test.reset_index(drop=True)], axis=1)
+
+
+plt.figure(figsize=(10, 6))
+sns.scatterplot(x=results_df['Actual'], y=results_df['Predicted'])
+plt.plot([results_df['Actual'].min(), results_df['Actual'].max()],
+         [results_df['Actual'].min(), results_df['Actual'].max()],
+         color='red', linestyle='--')
+plt.xlabel('Actual')
+plt.ylabel('Predicted')
+plt.title(f'Model 1 Actual vs. Predicted')
+plt.show()
+
+# plt.figure(figsize=(10, 6))
+# sns.scatterplot(x=results_df[feature_to_plot], y=results_df['Actual'], label='Actual')
+# sns.lineplot(x=results_df[feature_to_plot], y=results_df['Predicted'], color='red', label='Predicted')
+# plt.xlabel(feature_to_plot)
+# plt.ylabel('Target')
+# plt.title(f'{feature_to_plot} vs. Target with Regression Line')
+# plt.legend()
+# plt.show()
+#
+# # Calculate residuals
+# results_df['Residuals'] = results_df['Actual'] - results_df['Predicted']
+#
+# plt.figure(figsize=(10, 6))
+# sns.scatterplot(x=results_df['Predicted'], y=results_df['Residuals'])
+# plt.axhline(0, color='red', linestyle='--')
+# plt.xlabel('Predicted')
+# plt.ylabel('Residuals')
+# plt.title('Residuals vs. Predicted')
+# plt.show()
+
+
+
+
+################## MODEL 2 ###################
+
+y2_pred = model2.predict(X2_test)
+
+# Combine the actual and predicted values into a DataFrame for visualization
+results_df = pd.DataFrame({
+    'Actual': y2_test,
+    'Predicted': y2_pred
+})
+
+# Add the test features to the results for further analysis
+results_df = pd.concat([results_df, X2_test.reset_index(drop=True)], axis=1)
+
+plt.figure(figsize=(10, 6))
+sns.scatterplot(x=results_df['Actual'], y=results_df['Predicted'])
+plt.plot([results_df['Actual'].min(), results_df['Actual'].max()],
+         [results_df['Actual'].min(), results_df['Actual'].max()],
+         color='red', linestyle='--')
+plt.xlabel('Actual')
+plt.ylabel('Predicted')
+plt.title('Model 2 Actual vs. Predicted')
+plt.show()
+
+# plt.figure(figsize=(10, 6))
+# sns.scatterplot(x=results_df[feature_to_plot], y=results_df['Actual'], label='Actual')
+# sns.lineplot(x=results_df[feature_to_plot], y=results_df['Predicted'], color='red', label='Predicted')
+# plt.xlabel(feature_to_plot)
+# plt.ylabel('Target')
+# plt.title(f'{feature_to_plot} vs. Target with Regression Line')
+# plt.legend()
+# plt.show()
+#
+# # Calculate residuals
+# results_df['Residuals'] = results_df['Actual'] - results_df['Predicted']
+#
+# plt.figure(figsize=(10, 6))
+# sns.scatterplot(x=results_df['Predicted'], y=results_df['Residuals'])
+# plt.axhline(0, color='red', linestyle='--')
+# plt.xlabel('Predicted')
+# plt.ylabel('Residuals')
+# plt.title('Residuals vs. Predicted')
+# plt.show()
+
+
